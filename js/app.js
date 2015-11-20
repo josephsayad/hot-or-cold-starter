@@ -21,6 +21,7 @@ function newGame() {
   
   $('#guessButton').on('click', function() {
     var numericalGuess = $('input').val();
+    var watchOut = hybridCase(numericalGuess);
     if (!parseInt(numericalGuess) && numericalGuess != '0') {
       $('.prompt').hide();
       $('.out-of-range').hide();
@@ -32,6 +33,16 @@ function newGame() {
       $('.not-number').hide();
       $('.feedback-output').hide();
       $('.out-of-range').show();
+    }
+    // hybridCase will return false if not all characters of the userInput 
+    // evaluates to true when passed into parseInt(). This means a
+    // conditional that restricts normal program behaviors should be at play
+    // when watchOut is false; hence, else if !watchOut
+    else if (!watchOut) {
+      $('.prompt').hide();
+      $('.feedback-output').hide();
+      $('.out-of-range').hide();
+      $('.not-number').show();
     }
     else {
       hotOrCold(numericalGuess, randomNumber);
@@ -67,7 +78,7 @@ function randomNumberGenerator() {
 
 function hotOrCold(numericalGuessParameter, randomNumberParameter) {
 
-  var range = undefined, victoryCount = 0;
+  var range = undefined;
 
   var feedback = function(rangeParameter) {
 
@@ -97,7 +108,7 @@ function hotOrCold(numericalGuessParameter, randomNumberParameter) {
   if (numericalGuessParameter > randomNumberParameter) {
     range = numericalGuessParameter - randomNumberParameter;
   }
-  else if (numericalGuessParameter < randomNumberParameter) {
+  else {
     range = randomNumberParameter - numericalGuessParameter;
   }
 
@@ -113,4 +124,13 @@ function hotOrCold(numericalGuessParameter, randomNumberParameter) {
 
 function addItem(numericalGuessParameter) {
   $('#guessList').append('<li>'+ numericalGuessParameter +'</li>');
+}
+
+function hybridCase(userInput) {
+  for (var i = 0, len = userInput.length; i < len; i++) {
+    if(!parseInt(userInput[i])) {
+      return false;
+    }
+  }
+  return true;
 }
