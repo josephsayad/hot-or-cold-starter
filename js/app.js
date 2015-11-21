@@ -1,4 +1,5 @@
 var DEBUG = true;
+var victoryCount = 0;
 
 $(document).ready(function(){
   infoModalBox();
@@ -18,11 +19,16 @@ function newGame() {
   var randomNumber = randomNumberGenerator();
   var guessCount = 0, gameNumber = 1;
   if (DEBUG) console.log('Random Number: '+ randomNumber + '\tGame: ' + gameNumber);
-  
   $('#guessButton').on('click', function() {
     var numericalGuess = $('input').val();
     var watchOut = hybridCase(numericalGuess);
-    if (!parseInt(numericalGuess) && numericalGuess != '0') {
+    if (numericalGuess == '') {
+      $('.prompt').show();
+      $('.out-of-range').hide();
+      $('.feedback-output').hide();
+      $('.not-number').hide();
+    }
+    else if (!parseInt(numericalGuess) && numericalGuess != '0') {
       $('.prompt').hide();
       $('.out-of-range').hide();
       $('.feedback-output').hide();
@@ -46,13 +52,15 @@ function newGame() {
     }
     else {
       hotOrCold(numericalGuess, randomNumber);
+      if (victoryCount < 2) {guessCount++;}
       addItem(numericalGuess);
-      guessCount++;
       $('#count').replaceWith('<span id="count">'+ guessCount +'</span>');
     }
+    restrictGamePlay(guessCount);
   });
 
   $('.new').on('click', function(){
+    victoryCount = 0;
     gameNumber++;
     randomNumber = randomNumberGenerator();
 
@@ -65,6 +73,8 @@ function newGame() {
     $('.out-of-range').hide();
     $('.feedback-output').hide();
     $('.prompt').show();
+
+    $('.text').val('');
   });
 
   $('#number-input-form').submit(function(event){
@@ -83,6 +93,7 @@ function hotOrCold(numericalGuessParameter, randomNumberParameter) {
   var feedback = function(rangeParameter) {
 
     if (rangeParameter == 0) {
+      victoryCount++;
       return 'You Got It! Champ.'
     }
     else if (rangeParameter >= 1 && rangeParameter <= 10) {
@@ -107,14 +118,14 @@ function hotOrCold(numericalGuessParameter, randomNumberParameter) {
 
   if (numericalGuessParameter > randomNumberParameter) {
     range = numericalGuessParameter - randomNumberParameter;
-  }
+  } 
   else {
     range = randomNumberParameter - numericalGuessParameter;
   }
 
   msg = feedback(range);
 
-  if (DEBUG) console.log('Guess: ' + numericalGuessParameter + '\tRange: ' + range + '\nFeedback: ' + msg);
+  if (DEBUG) console.log('Guess: ' + numericalGuessParameter);
   $('.prompt').hide();
   $('.not-number').hide();
   $('.out-of-range').hide();
@@ -128,9 +139,21 @@ function addItem(numericalGuessParameter) {
 
 function hybridCase(userInput) {
   for (var i = 0, len = userInput.length; i < len; i++) {
-    if(!parseInt(userInput[i])) {
-      return false;
+    if (userInput[i] != 0) {
+      if (!parseInt(userInput[i])) {
+        return false;
+      }
     }
   }
   return true;
+}
+
+function restrictGamePlay(countRestriction) {
+  if (victoryCount >= 2) {
+    $('#guessList').find('li:last').hide();
+    $('.feedback-output').replaceWith('<h2 class = "feedback-output">You have already won! Start a New Game.</h2>');
+    $('.feedback-output').show();
+    $('.out-of-range').hide();
+    $('.not-number').hide();
+  }
 }
